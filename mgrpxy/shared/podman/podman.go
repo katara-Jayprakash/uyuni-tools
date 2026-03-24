@@ -156,7 +156,7 @@ func GenerateSystemdService(
 		}
 		if additionSSHConfPath != "" {
 			additionSSHTuningSettings = fmt.Sprintf(
-				`Environment=SSH_EXTRA_CONF=-v%s:/etc/ssh/sshd_config.d/99-tuning.conf:ro%s`,
+				`Environment=SSH_EXTRA_CONF=-v%s:/etc/ssh/sshd_config.d/10-tuning.conf:ro%s`,
 				additionSSHConfPath, volumeOptions,
 			)
 		}
@@ -247,6 +247,10 @@ func UnpackConfig(configPath string) error {
 		return err
 	}
 
+	if err := os.Chmod(proxyConfigDir, 0755); err != nil {
+		return err
+	}
+
 	if err := checkPermissions(proxyConfigDir, 0005|0050|0500); err != nil {
 		return err
 	}
@@ -290,6 +294,10 @@ func validateInstallYamlFiles(dir string) error {
 			return fmt.Errorf(L("missing required configuration file: %s"), filePath)
 		}
 		if file == "config.yaml" {
+			if err := os.Chmod(filePath, 0644); err != nil {
+				return err
+			}
+
 			if err := checkPermissions(filePath, 0004|0040|0400); err != nil {
 				return err
 			}
